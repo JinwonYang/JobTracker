@@ -1,11 +1,11 @@
-import type { JobPost } from '../types/jobPost.ts'
+import type { JobPost } from "../types/jobPost.ts";
 
 interface JobsResultsListProps {
-  jobs: JobPost[]
-  loading: boolean
-  hasSearched: boolean
-  totalCount: number
-  onApply: (job: JobPost) => void
+  jobs: JobPost[];
+  loading: boolean;
+  hasSearched: boolean;
+  totalCount: number;
+  onApply: (job: JobPost) => void;
 }
 
 export function JobsResultsList({
@@ -20,23 +20,25 @@ export function JobsResultsList({
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm">
         Loading jobs...
       </div>
-    )
+    );
   }
 
   if (!hasSearched) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm">
-        Search for roles from the new Jobs tab, then add promising postings to your tracker.
+        Search for roles from the new Jobs tab, then add promising postings to
+        your tracker.
       </div>
-    )
+    );
   }
 
   if (jobs.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm">
-        No jobs matched that search. Try broadening the keyword, location, or salary filter.
+        No jobs matched that search. Try broadening the keyword, location, or
+        salary filter.
       </div>
-    )
+    );
   }
 
   return (
@@ -67,22 +69,26 @@ export function JobsResultsList({
                   )}
                 </div>
 
-                <h3 className="text-lg font-semibold text-slate-900">{job.title}</h3>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {job.title}
+                </h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  {job.company || 'Unknown company'}
-                  {job.location ? ` · ${job.location}` : ''}
+                  {job.company || "Unknown company"}
+                  {job.location ? ` · ${job.location}` : ""}
                 </p>
 
                 {(job.salary || job.postedAt) && (
                   <p className="mt-2 text-sm text-slate-500">
-                    {job.salary || 'Salary not listed'}
-                    {job.salary && job.postedAt ? ' · ' : ''}
-                    {job.postedAt ? formatPostedAt(job.postedAt) : ''}
+                    {job.salary || "Salary not listed  "}
+                    {job.salary && job.postedAt ? " · " : ""}
+                    {job.postedAt ? formatPostedAt(job.postedAt) : ""}
                   </p>
                 )}
 
                 {job.summary && (
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{job.summary}</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {job.summary}
+                  </p>
                 )}
               </div>
 
@@ -107,7 +113,7 @@ export function JobsResultsList({
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function SourceBadge({ source }: { source: string }) {
@@ -115,13 +121,13 @@ function SourceBadge({ source }: { source: string }) {
     <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
       {source}
     </span>
-  )
+  );
 }
 
 function formatPostedAt(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  return new Date(value).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
