@@ -79,9 +79,9 @@ export function JobsResultsList({
 
                 {(job.salary || job.postedAt) && (
                   <p className="mt-2 text-sm text-slate-500">
-                    {job.salary || "Salary not listed  "}
+                    {job.salary || "Salary not listed · "}
                     {job.salary && job.postedAt ? " · " : ""}
-                    {job.postedAt ? ` · ${formatPostedAt(job.postedAt)}` : ""}
+                    {job.postedAt ? formatPostedAt(job.postedAt) : ""}
                   </p>
                 )}
 
