@@ -6,7 +6,7 @@ export interface JobSearchFilters {
 }
 
 export interface JobPost {
-  id: string
+  id: string | null
   source: string
   externalId: string
   title: string

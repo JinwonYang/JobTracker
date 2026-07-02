@@ -105,7 +105,7 @@ function AuthenticatedApp({ user, signOut }: { user: User; signOut: () => Promis
       memo: `Imported from ${job.source}`,
       appliedAt: todayAppliedAt(),
       source: job.source,
-      sourceJobId: job.id,
+      sourceJobId: job.id ?? undefined,
     })
     setModalOpen(true)
   }

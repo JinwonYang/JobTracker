@@ -83,7 +83,7 @@ async function searchSeekJobs(filters: JobSearchFilters) {
 
 function normalizeSeekJob(job: SeekJob) {
   return {
-    id: '',
+    id: null,
     source: 'seek',
     externalId: job.id,
     title: job.title ?? 'Untitled role',

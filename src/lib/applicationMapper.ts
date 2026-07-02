@@ -46,7 +46,7 @@ export function formDataToRow(data: JobFormData, userId: string) {
     applied_at: data.appliedAt,
     updated_at: new Date().toISOString(),
     source: data.source ?? null,
-    source_job_id: data.sourceJobId ?? null,
+    source_job_id: data.sourceJobId && data.sourceJobId.trim() ? data.sourceJobId : null,
   }
 }
 
@@ -64,7 +64,11 @@ export function formDataToUpdate(data: JobFormData) {
   }
 
   if (data.source !== undefined) {
-    return { ...row, source: data.source ?? null, source_job_id: data.sourceJobId ?? null }
+    return {
+      ...row,
+      source: data.source ?? null,
+      source_job_id: data.sourceJobId && data.sourceJobId.trim() ? data.sourceJobId : null,
+    }
   }
 
   return row
