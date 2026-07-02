@@ -9,6 +9,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Prevent mobile date inputs from overflowing grid columns */
+input[type="date"].date-input {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+}
+
+input[type="date"].date-input::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

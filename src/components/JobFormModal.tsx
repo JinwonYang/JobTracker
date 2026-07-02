@@ -102,7 +102,7 @@ function JobFormModalContent({
             </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Position">
+              <Field label="Position" className="min-w-0">
                 <input
                   type="text"
                   value={form.position}
@@ -111,7 +111,7 @@ function JobFormModalContent({
                   className={inputClass}
                 />
               </Field>
-              <Field label="Salary">
+              <Field label="Salary" className="min-w-0">
                 <input
                   type="text"
                   value={form.salary}
@@ -123,7 +123,7 @@ function JobFormModalContent({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Location">
+              <Field label="Location" className="min-w-0">
                 <input
                   type="text"
                   value={form.location}
@@ -132,7 +132,7 @@ function JobFormModalContent({
                   className={inputClass}
                 />
               </Field>
-              <Field label="Application Site">
+              <Field label="Application Site" className="min-w-0">
                 <input
                   type="text"
                   value={form.site}
@@ -143,16 +143,16 @@ function JobFormModalContent({
               </Field>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Applied Date">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Applied Date" className="min-w-0">
                 <input
                   type="date"
                   value={toDateInputValue(form.appliedAt)}
                   onChange={(e) => set('appliedAt', fromDateInputValue(e.target.value))}
-                  className={inputClass}
+                  className={`${inputClass} date-input`}
                 />
               </Field>
-              <Field label="Stage">
+              <Field label="Stage" className="min-w-0">
                 <select
                   value={form.stage}
                   onChange={(e) => set('stage', e.target.value)}
@@ -203,13 +203,15 @@ function Field({
   label,
   required,
   children,
+  className,
 }: {
   label: string
   required?: boolean
   children: ReactNode
+  className?: string
 }) {
   return (
-    <div>
+    <div className={className}>
       <label className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}
