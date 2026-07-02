@@ -93,6 +93,7 @@ export function useJobApplications(userId: string) {
 
   const addApplication = useCallback(
     async (data: JobFormData) => {
+      setError(null)
       const { data: row, error: insertError } = await supabase
         .from('applications')
         .insert(formDataToRow(data, userId))
@@ -110,6 +111,7 @@ export function useJobApplications(userId: string) {
   )
 
   const updateApplication = useCallback(async (id: string, data: JobFormData) => {
+    setError(null)
     const { data: row, error: updateError } = await supabase
       .from('applications')
       .update(formDataToUpdate(data))
@@ -127,6 +129,7 @@ export function useJobApplications(userId: string) {
   }, [])
 
   const deleteApplication = useCallback(async (id: string) => {
+    setError(null)
     const { error: deleteError } = await supabase.from('applications').delete().eq('id', id)
 
     if (deleteError) {

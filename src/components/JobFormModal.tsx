@@ -5,11 +5,13 @@ import { EMPTY_FORM, STAGES, fromDateInputValue, todayAppliedAt, toDateInputValu
 interface JobFormModalProps {
   open: boolean
   initial?: JobApplication
+  draft?: JobFormData
   onClose: () => void
   onSubmit: (data: JobFormData) => void
 }
 
-function toFormData(job?: JobApplication): JobFormData {
+function toFormData(job?: JobApplication, draft?: JobFormData): JobFormData {
+  if (draft) return { ...EMPTY_FORM, ...draft, appliedAt: draft.appliedAt || todayAppliedAt() }
   if (!job) return { ...EMPTY_FORM, appliedAt: todayAppliedAt() }
   return {
     company: job.company,
@@ -20,16 +22,19 @@ function toFormData(job?: JobApplication): JobFormData {
     stage: job.stage,
     memo: job.memo,
     appliedAt: job.appliedAt,
+    source: job.source,
+    sourceJobId: job.sourceJobId,
   }
 }
 
-export function JobFormModal({ open, initial, onClose, onSubmit }: JobFormModalProps) {
+export function JobFormModal({ open, initial, draft, onClose, onSubmit }: JobFormModalProps) {
   if (!open) return null
 
   return (
     <JobFormModalContent
-      key={initial?.id ?? 'new'}
+      key={initial?.id ?? draft?.sourceJobId ?? 'new'}
       initial={initial}
+      draft={draft}
       onClose={onClose}
       onSubmit={onSubmit}
     />
@@ -38,10 +43,11 @@ export function JobFormModal({ open, initial, onClose, onSubmit }: JobFormModalP
 
 function JobFormModalContent({
   initial,
+  draft,
   onClose,
   onSubmit,
 }: Omit<JobFormModalProps, 'open'>) {
-  const [form, setForm] = useState<JobFormData>(() => toFormData(initial))
+  const [form, setForm] = useState<JobFormData>(() => toFormData(initial, draft))
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {

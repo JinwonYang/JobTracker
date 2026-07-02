@@ -12,6 +12,8 @@ export interface ApplicationRow {
   memo: string
   applied_at: string
   updated_at: string
+  source: string | null
+  source_job_id: string | null
 }
 
 export function rowToApplication(row: ApplicationRow): JobApplication {
@@ -26,6 +28,8 @@ export function rowToApplication(row: ApplicationRow): JobApplication {
     memo: row.memo,
     appliedAt: row.applied_at,
     updatedAt: row.updated_at,
+    source: row.source ?? undefined,
+    sourceJobId: row.source_job_id,
   }
 }
 
@@ -41,11 +45,13 @@ export function formDataToRow(data: JobFormData, userId: string) {
     memo: data.memo,
     applied_at: data.appliedAt,
     updated_at: new Date().toISOString(),
+    source: data.source ?? null,
+    source_job_id: data.sourceJobId ?? null,
   }
 }
 
 export function formDataToUpdate(data: JobFormData) {
-  return {
+  const row = {
     company: data.company,
     site: data.site,
     salary: data.salary,
@@ -56,4 +62,10 @@ export function formDataToUpdate(data: JobFormData) {
     applied_at: data.appliedAt,
     updated_at: new Date().toISOString(),
   }
+
+  if (data.source !== undefined) {
+    return { ...row, source: data.source ?? null, source_job_id: data.sourceJobId ?? null }
+  }
+
+  return row
 }

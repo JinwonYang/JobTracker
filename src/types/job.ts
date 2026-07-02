@@ -26,6 +26,8 @@ export interface JobApplication {
   memo: string;
   appliedAt: string;
   updatedAt: string;
+  source?: string;
+  sourceJobId?: string | null;
 }
 
 export type JobFormData = Omit<JobApplication, "id" | "updatedAt">;

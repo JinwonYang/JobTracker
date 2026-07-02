@@ -3,13 +3,17 @@ import type { User } from '@supabase/supabase-js'
 import { AuthPage } from './components/AuthPage.tsx'
 import { JobFormModal } from './components/JobFormModal.tsx'
 import { JobTable } from './components/JobTable.tsx'
+import { JobsResultsList } from './components/JobsResultsList.tsx'
+import { JobsSearchPanel } from './components/JobsSearchPanel.tsx'
 import { SetupPage } from './components/SetupPage.tsx'
 import { StatsBar } from './components/StatsBar.tsx'
 import { useAuth } from './hooks/useAuth.ts'
 import { useJobApplications } from './hooks/useJobApplications.ts'
+import { useJobSearch } from './hooks/useJobSearch.ts'
 import { isSupabaseConfigured } from './lib/supabase.ts'
-import type { JobApplication } from './types/job.ts'
-import { STAGES } from './types/job.ts'
+import type { JobApplication, JobFormData } from './types/job.ts'
+import { STAGES, todayAppliedAt } from './types/job.ts'
+import type { JobPost } from './types/jobPost.ts'
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -46,11 +50,21 @@ function AuthenticatedApp({ user, signOut }: { user: User; signOut: () => Promis
     updateApplication,
     deleteApplication,
   } = useJobApplications(user.id)
+  const {
+    results: jobs,
+    loading: jobsLoading,
+    error: jobsError,
+    hasSearched,
+    totalCount,
+    searchJobs,
+  } = useJobSearch()
 
   const [search, setSearch] = useState('')
   const [stageFilter, setStageFilter] = useState<string>('All')
+  const [activeTab, setActiveTab] = useState<'applications' | 'jobs'>('applications')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<JobApplication | undefined>()
+  const [draftApplication, setDraftApplication] = useState<JobFormData | undefined>()
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -69,11 +83,30 @@ function AuthenticatedApp({ user, signOut }: { user: User; signOut: () => Promis
 
   const openAdd = () => {
     setEditing(undefined)
+    setDraftApplication(undefined)
     setModalOpen(true)
   }
 
   const openEdit = (app: JobApplication) => {
     setEditing(app)
+    setDraftApplication(undefined)
+    setModalOpen(true)
+  }
+
+  const openApplyFromJob = (job: JobPost) => {
+    setEditing(undefined)
+    setDraftApplication({
+      company: job.company,
+      site: job.url,
+      salary: job.salary,
+      position: job.title,
+      location: job.location,
+      stage: 'Not Applied',
+      memo: `Imported from ${job.source}`,
+      appliedAt: todayAppliedAt(),
+      source: job.source,
+      sourceJobId: job.id,
+    })
     setModalOpen(true)
   }
 
@@ -134,67 +167,93 @@ function AuthenticatedApp({ user, signOut }: { user: User; signOut: () => Promis
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {error && (
-          <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
-            {error}
+        {[error, jobsError].filter(Boolean).map((message) => (
+          <div
+            key={message}
+            className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100"
+          >
+            {message}
           </div>
-        )}
+        ))}
 
         {appsLoading ? (
           <p className="text-sm text-slate-500">Loading applications...</p>
         ) : (
           <>
-            <StatsBar applications={applications} />
+            <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+              <TabButton
+                active={activeTab === 'applications'}
+                onClick={() => setActiveTab('applications')}
+              >
+                Applications
+              </TabButton>
+              <TabButton active={activeTab === 'jobs'} onClick={() => setActiveTab('jobs')}>
+                Jobs
+              </TabButton>
+            </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <svg
-                  className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search company, position, location, notes..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            {activeTab === 'applications' ? (
+              <>
+                <StatsBar applications={applications} />
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="relative flex-1">
+                    <svg
+                      className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search company, position, location, notes..."
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </div>
+                  <select
+                    value={stageFilter}
+                    onChange={(e) => setStageFilter(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  >
+                    <option value="All">All stages</option>
+                    {STAGES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mt-4">
+                  {filtered.length !== applications.length && (
+                    <p className="mb-3 text-sm text-slate-500">
+                      {filtered.length} of {applications.length} applications
+                    </p>
+                  )}
+                  <JobTable applications={filtered} onEdit={openEdit} onDelete={handleDelete} />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <JobsSearchPanel loading={jobsLoading} onSearch={searchJobs} />
+                <JobsResultsList
+                  jobs={jobs}
+                  loading={jobsLoading}
+                  hasSearched={hasSearched}
+                  totalCount={totalCount}
+                  onApply={openApplyFromJob}
                 />
               </div>
-              <select
-                value={stageFilter}
-                onChange={(e) => setStageFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              >
-                <option value="All">All stages</option>
-                {STAGES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-4">
-              {filtered.length !== applications.length && (
-                <p className="mb-3 text-sm text-slate-500">
-                  {filtered.length} of {applications.length} applications
-                </p>
-              )}
-              <JobTable
-                applications={filtered}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-              />
-            </div>
+            )}
           </>
         )}
       </main>
@@ -202,9 +261,33 @@ function AuthenticatedApp({ user, signOut }: { user: User; signOut: () => Promis
       <JobFormModal
         open={modalOpen}
         initial={editing}
+        draft={draftApplication}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
       />
     </div>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+        active
+          ? 'bg-indigo-600 text-white shadow-sm'
+          : 'text-slate-600 hover:bg-slate-50'
+      }`}
+    >
+      {children}
+    </button>
   )
 }
